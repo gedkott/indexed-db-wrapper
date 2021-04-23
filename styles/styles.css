@@ -1,0 +1,7 @@
+.beautiful-todo-item {
+    border: 1px solid black;
+    border-radius: 10px;
+    font-size: 30px;
+    margin: 20px;
+    padding: 10px;
+}

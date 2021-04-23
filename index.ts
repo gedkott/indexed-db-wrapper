@@ -230,7 +230,7 @@ const testCases = [
   withRandom((random: number) => ({
     mock: withWorkingMockedIndexedDB(),
     expectedGetAllResult: [{
-      taskTitle: `Walk dog #${random}`, hours: 19, minutes: 30, day: 24, month: 'December', year: 2013, notified: 'no',
+      taskTitle: `Walk dog #${random}`, hours: 19, minutes: 30, day: 24, month: 11, year: 2013, notified: 'no',
     }],
     expectedAddResult: [`Walk dog #${random}`],
     random,
@@ -249,34 +249,47 @@ const testCases = [
   })),
 ];
 
+function presentWhatsInTheDatabase(items: Array<any>) {
+  const div = document.createElement('div');
+  document.body.appendChild(div);
+  items.forEach((item: any) => {
+    const itemRepr = document.createElement('div');
+    itemRepr.setAttribute('class', 'beautiful-todo-item');
+    itemRepr.textContent = `Task Title: ${item.taskTitle} | Due: ${new Date(item.year, item.month, item.day, item.hours, item.minutes, 0)} | Notified: ${item.notified}`;
+    div.appendChild(itemRepr);
+  });
+}
+
 testCases.forEach(({
   mock, expectedGetAllResult, expectedAddResult, random,
 }) => {
   mock
     .then((db) => {
       const newItem = {
-        taskTitle: `Walk dog #${random}`, hours: 19, minutes: 30, day: 24, month: 'December', year: 2013, notified: 'no',
+        taskTitle: `Walk dog #${random}`, hours: 19, minutes: 30, day: 24, month: 11, year: 2013, notified: 'no',
       };
       return db.add([newItem])
         .then((result: any) => ({ db, result }));
     })
     .then(({ db, result }) => {
       if (expectedAddResult && (JSON.stringify(result) !== JSON.stringify(expectedAddResult))) {
-        throw new Error('our test failed');
+        return Promise.reject(new Error('our test failed'));
       }
       // eslint-disable-next-line no-console
       console.log(random, 'add result', result);
       return db.getAll()
         .then((getAllResult: any) => ({ db, result: getAllResult }));
     })
-    .then(({ result }) => {
+    .then(({ result, db }) => {
       const areEqual = JSON.stringify(result) === JSON.stringify(expectedGetAllResult);
       if (expectedGetAllResult && !areEqual) {
-        throw new Error('our test failed');
+        return Promise.reject(new Error('our test failed'));
       }
       // eslint-disable-next-line no-console
       console.log(random, 'get all result', result);
+      return db;
     })
+    .then((db) => db.getAll().then(presentWhatsInTheDatabase))
     .catch((err) => {
       // eslint-disable-next-line no-console
       console.error(random, 'error occurred in indexedDB', err);

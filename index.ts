@@ -1,5 +1,7 @@
 interface IIndexedDBWrapper {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   add: (iterable: Array<any>) => Promise<Iterable<any>>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getAll: () => Promise<Array<any>>
 }
 
@@ -18,16 +20,14 @@ interface IDBDatabaseWrapper {
 type ObjectStoreConstructor = (db: IDBDatabaseWrapper) => void;
 
 const IndexedDBWrapper = (function ief(_impl: IndexedDBFactoryWrapper) {
-  // eslint-disable-next-line max-len
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, max-len
   function IndexedDBRequestWrapper(idbRequest: IDBRequest, objectStoreConstructor?: ObjectStoreConstructor): Promise<any> {
     return new Promise((resolve, reject) => {
-      // error event : request
       // eslint-disable-next-line no-param-reassign
       idbRequest.onerror = function onerror(event) {
         return reject(event);
       };
 
-      // success event : request
       // eslint-disable-next-line no-param-reassign
       idbRequest.onsuccess = function onerror() {
         return resolve(idbRequest.result);
@@ -80,7 +80,9 @@ const IndexedDBWrapper = (function ief(_impl: IndexedDBFactoryWrapper) {
             }
 
             return resolve({
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               add(iterable: Array<any>): Promise<Iterable<any>> {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const addRequestGenerator = (item: any) => {
                   const addRequest = objectStore.add(item);
                   return IndexedDBRequestWrapper(addRequest);
@@ -114,6 +116,7 @@ function mockImpl(mockOptions: MockOptions = defaultMockOptions) {
     key: mockOptions.key,
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const items: Array<any> = [];
 
   interface MockSetFunctionOptions {
@@ -122,6 +125,7 @@ function mockImpl(mockOptions: MockOptions = defaultMockOptions) {
 
   type MSFO = MockSetFunctionOptions
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const set = (mockSetFuncOpts: MSFO) => (_obj: any, name: string, func: any) => {
     if (name === 'onsuccess' && mockSetFuncOpts.succeed) {
       func();
@@ -146,6 +150,7 @@ function mockImpl(mockOptions: MockOptions = defaultMockOptions) {
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function add(item: any) {
     items.push(item);
     const request = {
@@ -159,7 +164,7 @@ function mockImpl(mockOptions: MockOptions = defaultMockOptions) {
     );
   }
 
-  // eslint-disable-next-line no-unused-vars
+  // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
   function objectStore(_objectStoreName: string) {
     return {
       add,
@@ -167,7 +172,7 @@ function mockImpl(mockOptions: MockOptions = defaultMockOptions) {
     };
   }
 
-  // eslint-disable-next-line no-unused-vars
+  // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
   function transaction(_objectStoreName: string, _mode: string) {
     return {
       objectStore,
@@ -197,7 +202,6 @@ const toDoListObjectStoreConstructor: ObjectStoreConstructor = (db: IDBDatabaseW
   const objectStore = db.createObjectStore('toDoList', { keyPath: 'taskTitle' });
 
   // define what data items the objectStore will contain
-
   objectStore.createIndex('hours', 'hours', { unique: false });
   objectStore.createIndex('minutes', 'minutes', { unique: false });
   objectStore.createIndex('day', 'day', { unique: false });
@@ -214,7 +218,9 @@ const withBrokenGetAll = () => IndexedDBWrapper.new('some_named_database', 'toDo
 
 interface TestCaseOptions {
   mock: Promise<IIndexedDBWrapper>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   expectedGetAllResult: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   expectedAddResult: any,
   random: number
 }
@@ -249,10 +255,11 @@ const testCases = [
   })),
 ];
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function presentWhatsInTheDatabase(items: Array<any>) {
   const div = document.createElement('div');
   document.body.appendChild(div);
-  items.forEach((item: any) => {
+  items.forEach((item) => {
     const itemRepr = document.createElement('div');
     itemRepr.setAttribute('class', 'beautiful-todo-item');
     itemRepr.textContent = `Task Title: ${item.taskTitle} | Due: ${new Date(item.year, item.month, item.day, item.hours, item.minutes, 0)} | Notified: ${item.notified}`;
@@ -269,7 +276,7 @@ testCases.forEach(({
         taskTitle: `Walk dog #${random}`, hours: 19, minutes: 30, day: 24, month: 11, year: 2013, notified: 'no',
       };
       return db.add([newItem])
-        .then((result: any) => ({ db, result }));
+        .then((result) => ({ db, result }));
     })
     .then(({ db, result }) => {
       if (expectedAddResult && (JSON.stringify(result) !== JSON.stringify(expectedAddResult))) {
@@ -278,7 +285,7 @@ testCases.forEach(({
       // eslint-disable-next-line no-console
       console.log(random, 'add result', result);
       return db.getAll()
-        .then((getAllResult: any) => ({ db, result: getAllResult }));
+        .then((getAllResult) => ({ db, result: getAllResult }));
     })
     .then(({ result, db }) => {
       const areEqual = JSON.stringify(result) === JSON.stringify(expectedGetAllResult);
